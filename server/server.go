@@ -11,11 +11,6 @@ type Message struct {
 	Text string
 }
 
-type FetchResponse struct {
-	Messages []Message
-	Time     time.Time
-}
-
 type StoreRequest struct {
 	StartTime time.Time
 	Messages  chan<- []Message
@@ -94,7 +89,7 @@ func start_server(store Store) {
 		messages_from_store := make(chan []Message, 1)
 		store.Get <- StoreRequest{since, messages_from_store}
 
-		json_encoded, err := json.Marshal(FetchResponse{<-messages_from_store, time.Now()})
+		json_encoded, err := json.Marshal(<-messages_from_store)
 		if err != nil {
 			log.Print("json encode: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
