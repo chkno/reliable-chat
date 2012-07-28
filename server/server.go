@@ -2,6 +2,7 @@ package main
 
 import "container/list"
 import "encoding/json"
+import "expvar"
 import "flag"
 import "log"
 import "net/http"
@@ -9,6 +10,11 @@ import "strconv"
 import "time"
 
 var port = flag.Int("port", 21059, "Port to listen on")
+
+var speak_count = expvar.NewInt("speak_count")
+var fetch_count = expvar.NewInt("fetch_count")
+var fetch_wait_count = expvar.NewInt("fetch_wait_count")
+var fetch_wake_count = expvar.NewInt("fetch_wake_count")
 
 type Message struct {
 	Time time.Time
@@ -39,12 +45,14 @@ main:
 			if !ok {
 				break main
 			}
-			messages.PushBack(new_message)
+			speak_count.Add(1)
 			for waiter := waiting.Front(); waiter != nil; waiter = waiter.Next() {
 				waiter.Value.(*StoreRequest).Messages <- []Message{*new_message}
 				close(waiter.Value.(*StoreRequest).Messages)
+				fetch_wake_count.Add(1)
 			}
 			waiting.Init()
+			messages.PushBack(new_message)
 			if message_count < max_messages {
 				message_count++
 			} else {
@@ -54,8 +62,10 @@ main:
 			if !ok {
 				break main
 			}
+			fetch_count.Add(1)
 			if messages.Back() == nil || !request.StartTime.Before(messages.Back().Value.(*Message).Time) {
 				waiting.PushBack(request)
+				fetch_wait_count.Add(1)
 			} else {
 				start := messages.Back()
 				response_size := 1
