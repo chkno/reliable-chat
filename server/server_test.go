@@ -21,4 +21,6 @@ func TestMessageInsertAndRetreive(t *testing.T) {
 	if messages[0].Text != say {
 		t.Fail()
 	}
+	close(store.Get)
+	close(store.Add)
 }

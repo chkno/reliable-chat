@@ -28,9 +28,13 @@ func manage_store(store Store) {
 	message_count := 0
 	max_messages := 1000
 	waiting := list.New()
+main:
 	for {
 		select {
-		case new_message := <-store.Add:
+		case new_message, ok := <-store.Add:
+			if !ok {
+				break main
+			}
 			messages.PushBack(new_message)
 			for waiter := waiting.Front(); waiter != nil; waiter = waiter.Next() {
 				waiter.Value.(*StoreRequest).Messages <- []Message{*new_message}
@@ -42,7 +46,10 @@ func manage_store(store Store) {
 			} else {
 				messages.Remove(messages.Front())
 			}
-		case request := <-store.Get:
+		case request, ok := <-store.Get:
+			if !ok {
+				break main
+			}
 			if messages.Back() == nil || !request.StartTime.Before(messages.Back().Value.(*Message).Time) {
 				waiting.PushBack(request)
 			} else {
