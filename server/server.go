@@ -17,8 +17,8 @@ type StoreRequest struct {
 }
 
 type Store struct {
-	Add chan Message
-	Get chan StoreRequest
+	Add chan *Message
+	Get chan *StoreRequest
 }
 
 // TODO: Monotonic clock
@@ -33,8 +33,8 @@ func manage_store(store Store) {
 		case new_message := <-store.Add:
 			messages.PushBack(new_message)
 			for waiter := waiting.Front(); waiter != nil; waiter = waiter.Next() {
-				waiter.Value.(StoreRequest).Messages <- []Message{new_message}
-				close(waiter.Value.(StoreRequest).Messages)
+				waiter.Value.(*StoreRequest).Messages <- []Message{*new_message}
+				close(waiter.Value.(*StoreRequest).Messages)
 			}
 			waiting.Init()
 			if message_count < max_messages {
@@ -43,23 +43,23 @@ func manage_store(store Store) {
 				messages.Remove(messages.Front())
 			}
 		case request := <-store.Get:
-			if messages.Back() == nil || !request.StartTime.Before(messages.Back().Value.(Message).Time) {
+			if messages.Back() == nil || !request.StartTime.Before(messages.Back().Value.(*Message).Time) {
 				waiting.PushBack(request)
 			} else {
 				start := messages.Back()
 				response_size := 1
-				if messages.Front().Value.(Message).Time.After(request.StartTime) {
+				if messages.Front().Value.(*Message).Time.After(request.StartTime) {
 					start = messages.Front()
 					response_size = message_count
 				} else {
-					for start.Prev().Value.(Message).Time.After(request.StartTime) {
+					for start.Prev().Value.(*Message).Time.After(request.StartTime) {
 						start = start.Prev()
 						response_size++
 					}
 				}
 				response_messages := make([]Message, 0, response_size)
 				for m := start; m != nil; m = m.Next() {
-					response_messages = append(response_messages, m.Value.(Message))
+					response_messages = append(response_messages, *m.Value.(*Message))
 				}
 				request.Messages <- response_messages
 			}
@@ -68,7 +68,7 @@ func manage_store(store Store) {
 }
 
 func start_store() Store {
-	store := Store{make(chan Message, 20), make(chan StoreRequest, 20)}
+	store := Store{make(chan *Message, 20), make(chan *StoreRequest, 20)}
 	go manage_store(store)
 	return store
 }
@@ -87,7 +87,7 @@ func start_server(store Store) {
 			}
 		}
 		messages_from_store := make(chan []Message, 1)
-		store.Get <- StoreRequest{since, messages_from_store}
+		store.Get <- &StoreRequest{since, messages_from_store}
 
 		json_encoded, err := json.Marshal(<-messages_from_store)
 		if err != nil {
@@ -100,7 +100,7 @@ func start_server(store Store) {
 	})
 
 	http.HandleFunc("/speak", func(w http.ResponseWriter, r *http.Request) {
-		store.Add <- Message{time.Now(), r.FormValue("text")}
+		store.Add <- &Message{time.Now(), r.FormValue("text")}
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
