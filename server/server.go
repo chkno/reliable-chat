@@ -2,9 +2,13 @@ package main
 
 import "container/list"
 import "encoding/json"
+import "flag"
 import "log"
 import "net/http"
+import "strconv"
 import "time"
+
+var port = flag.Int("port", 21059, "Port to listen on")
 
 type Message struct {
 	Time time.Time
@@ -110,7 +114,7 @@ func start_server(store Store) {
 		store.Add <- &Message{time.Now(), r.FormValue("text")}
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":" + strconv.Itoa(*port), nil))
 }
 
 func main() {
