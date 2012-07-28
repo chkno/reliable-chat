@@ -1,0 +1,108 @@
+package main
+
+import "container/list"
+import "encoding/json"
+import "log"
+import "net/http"
+import "time"
+
+type Message struct {
+	Time time.Time
+	Text string
+}
+
+type FetchResponse struct {
+	Messages []Message
+	Time     time.Time
+}
+
+type StoreRequest struct {
+	StartTime time.Time
+	Messages  chan<- []Message
+}
+
+type Store struct {
+	Add chan Message
+	Get chan StoreRequest
+}
+
+// TODO: Monotonic clock
+
+func manage_store(store Store) {
+	messages := list.New()
+	message_count := 0
+	max_messages := 1000
+	waiting := list.New()
+	for {
+		select {
+		case new_message := <-store.Add:
+			messages.PushBack(new_message)
+			for waiter := waiting.Front(); waiter != nil; waiter = waiter.Next() {
+				waiter.Value.(StoreRequest).Messages <- []Message{new_message}
+				close(waiter.Value.(StoreRequest).Messages)
+			}
+			waiting.Init()
+			if message_count < max_messages {
+				message_count++
+			} else {
+				messages.Remove(messages.Front())
+			}
+		case request := <-store.Get:
+			if messages.Back() == nil || request.StartTime.After(messages.Back().Value.(Message).Time) {
+				waiting.PushBack(request)
+			} else {
+				start := messages.Back()
+				response_size := 1
+				if messages.Front().Value.(Message).Time.After(request.StartTime) {
+					start = messages.Front()
+					response_size = message_count
+				} else {
+					for start.Prev().Value.(Message).Time.After(request.StartTime) {
+						start = start.Prev()
+						response_size++
+					}
+				}
+				response_messages := make([]Message, 0, response_size)
+				for m := start; m != nil; m = m.Next() {
+					response_messages = append(response_messages, m.Value.(Message))
+				}
+				request.Messages <- response_messages
+			}
+		}
+	}
+}
+
+func start_store() Store {
+	store := Store{make(chan Message, 20), make(chan StoreRequest, 20)}
+	go manage_store(store)
+	return store
+}
+
+func start_server(store Store) {
+	http.HandleFunc("/fetch", func(w http.ResponseWriter, r *http.Request) {
+		var since time.Time // TODO: Get start time from URL
+		messages_from_store := make(chan []Message, 1)
+		store.Get <- StoreRequest{since, messages_from_store}
+
+		json_encoded, err := json.Marshal(FetchResponse{<-messages_from_store, time.Now()})
+		if err != nil {
+			log.Print("json encode: ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		w.Write(json_encoded)
+	})
+
+	http.HandleFunc("/speak", func(w http.ResponseWriter, r *http.Request) {
+		text := "woof" // TODO: Get text from URL
+		store.Add <- Message{time.Now(), text}
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func main() {
+	store := start_store()
+	start_server(store)
+}
