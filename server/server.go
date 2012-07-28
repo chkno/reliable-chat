@@ -80,7 +80,17 @@ func start_store() Store {
 
 func start_server(store Store) {
 	http.HandleFunc("/fetch", func(w http.ResponseWriter, r *http.Request) {
-		var since time.Time // TODO: Get start time from URL
+		var since time.Time
+		url_since := r.FormValue("since")
+		if url_since != "" {
+			err := json.Unmarshal([]byte(url_since), &since)
+			if err != nil {
+				log.Print("fetch: parse since: ", err)
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte("Could not parse since as date"))
+				return
+			}
+		}
 		messages_from_store := make(chan []Message, 1)
 		store.Get <- StoreRequest{since, messages_from_store}
 
@@ -95,8 +105,7 @@ func start_server(store Store) {
 	})
 
 	http.HandleFunc("/speak", func(w http.ResponseWriter, r *http.Request) {
-		text := "woof" // TODO: Get text from URL
-		store.Add <- Message{time.Now(), text}
+		store.Add <- Message{time.Now(), r.FormValue("text")}
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
