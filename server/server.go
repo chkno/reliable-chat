@@ -48,7 +48,7 @@ func manage_store(store Store) {
 				messages.Remove(messages.Front())
 			}
 		case request := <-store.Get:
-			if messages.Back() == nil || request.StartTime.After(messages.Back().Value.(Message).Time) {
+			if messages.Back() == nil || !request.StartTime.Before(messages.Back().Value.(Message).Time) {
 				waiting.PushBack(request)
 			} else {
 				start := messages.Back()
