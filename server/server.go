@@ -124,7 +124,7 @@ func start_server(store Store) {
 		store.Add <- &Message{time.Now(), r.FormValue("text")}
 	})
 
-	log.Fatal(http.ListenAndServe(":" + strconv.Itoa(*port), nil))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
 
 func main() {
