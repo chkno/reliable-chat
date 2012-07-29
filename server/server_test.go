@@ -5,6 +5,18 @@ import "runtime"
 import "strconv"
 import "time"
 
+func expectMessage(t *testing.T, m *Message, at time.Time, id, say string) {
+	if m.Time != at {
+		t.Fail()
+	}
+	if m.ID != id {
+		t.Fail()
+	}
+	if m.Text != say {
+		t.Fail()
+	}
+}
+
 func TestMessageInsertAndRetreive(t *testing.T) {
 	id := "1"
 	say := "'Ello, Mister Polly Parrot!"
@@ -18,15 +30,7 @@ func TestMessageInsertAndRetreive(t *testing.T) {
 	if len(messages) != 1 {
 		t.FailNow()
 	}
-	if messages[0].Time != at {
-		t.Fail()
-	}
-	if messages[0].ID != id {
-		t.Fail()
-	}
-	if messages[0].Text != say {
-		t.Fail()
-	}
+	expectMessage(t, &messages[0], at, id, say)
 	close(store.Get)
 	close(store.Add)
 }
@@ -48,15 +52,7 @@ func TestFetchBlocksUntilSpeak(t *testing.T) {
 	if len(messages) != 1 {
 		t.FailNow()
 	}
-	if messages[0].Time != at {
-		t.Fail()
-	}
-	if messages[0].ID != id {
-		t.Fail()
-	}
-	if messages[0].Text != say {
-		t.Fail()
-	}
+	expectMessage(t, &messages[0], at, id, say)
 	close(store.Get)
 	close(store.Add)
 }
@@ -79,15 +75,7 @@ func TestMultipleListeners(t *testing.T) {
 		if len(messages) != 1 {
 			t.FailNow()
 		}
-		if messages[0].Time != at {
-			t.Fail()
-		}
-		if messages[0].ID != id {
-			t.Fail()
-		}
-		if messages[0].Text != say {
-			t.Fail()
-		}
+		expectMessage(t,& messages[0], at, id, say)
 	}
 	close(store.Get)
 	close(store.Add)
@@ -135,24 +123,8 @@ func TestPartialRetreive(t *testing.T) {
 	if len(messages) != 2 {
 		t.FailNow()
 	}
-	if messages[0].Time != at2 {
-		t.Fail()
-	}
-	if messages[0].ID != id2 {
-		t.Fail()
-	}
-	if messages[0].Text != say2 {
-		t.Fail()
-	}
-	if messages[1].Time != at3 {
-		t.Fail()
-	}
-	if messages[1].ID != id3 {
-		t.Fail()
-	}
-	if messages[1].Text != say3 {
-		t.Fail()
-	}
+	expectMessage(t, &messages[0], at2, id2, say2)
+	expectMessage(t, &messages[1], at3, id3, say3)
 	close(store.Get)
 	close(store.Add)
 }
@@ -183,15 +155,7 @@ func TestPrecisePartialRetreive(t *testing.T) {
 	if len(messages) != 1 {
 		t.FailNow()
 	}
-	if messages[0].Time != at3 {
-		t.Fail()
-	}
-	if messages[0].ID != id3 {
-		t.Fail()
-	}
-	if messages[0].Text != say3 {
-		t.Fail()
-	}
+	expectMessage(t, &messages[0], at3, id3, say3)
 	close(store.Get)
 	close(store.Add)
 }
@@ -219,15 +183,7 @@ func TestTypicalFlow(t *testing.T) {
 	if len(messages1) != 1 {
 		t.FailNow()
 	}
-	if messages1[0].Time != at1 {
-		t.Fail()
-	}
-	if messages1[0].ID != id1 {
-		t.Fail()
-	}
-	if messages1[0].Text != say1 {
-		t.Fail()
-	}
+	expectMessage(t, &messages1[0], at1, id1, say1)
 
 	// Upon recipt, client blocks on fetch with since=at1
 	prev_fetch_wait_count = fetch_wait_count.String()
@@ -247,15 +203,7 @@ func TestTypicalFlow(t *testing.T) {
 	if len(messages2) != 1 {
 		t.FailNow()
 	}
-	if messages2[0].Time != at2 {
-		t.Fail()
-	}
-	if messages2[0].ID != id2 {
-		t.Fail()
-	}
-	if messages2[0].Text != say2 {
-		t.Fail()
-	}
+	expectMessage(t, &messages2[0], at2, id2, say2)
 
 	close(store.Get)
 	close(store.Add)
