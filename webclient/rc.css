@@ -2,3 +2,4 @@ html, body, #outer-table, #history { width: 99.9%; height: 100%; margin: 0; padd
 #status { background-color: #eef }
 #say { width: 100% }
 #history { vertical-align: bottom }
+img { width: 1px; height: 1px; }
