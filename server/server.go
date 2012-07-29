@@ -18,6 +18,7 @@ var fetch_wake_count = expvar.NewInt("fetch_wake_count")
 
 type Message struct {
 	Time time.Time
+	ID   string
 	Text string
 }
 
@@ -121,7 +122,10 @@ func start_server(store Store) {
 	})
 
 	http.HandleFunc("/speak", func(w http.ResponseWriter, r *http.Request) {
-		store.Add <- &Message{time.Now(), r.FormValue("text")}
+		store.Add <- &Message{
+			time.Now(),
+			r.FormValue("id"),
+			r.FormValue("text")}
 	})
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))

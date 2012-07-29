@@ -6,11 +6,12 @@ import "strconv"
 import "time"
 
 func TestMessageInsertAndRetreive(t *testing.T) {
+	id := "1"
 	say := "'Ello, Mister Polly Parrot!"
 	at := time.Now()
 	var zero_time time.Time
 	store := start_store()
-	store.Add <- &Message{at, say}
+	store.Add <- &Message{at, id, say}
 	messages_from_store := make(chan []Message, 1)
 	store.Get <- &StoreRequest{zero_time, messages_from_store}
 	messages := <-messages_from_store
@@ -18,6 +19,9 @@ func TestMessageInsertAndRetreive(t *testing.T) {
 		t.FailNow()
 	}
 	if messages[0].Time != at {
+		t.Fail()
+	}
+	if messages[0].ID != id {
 		t.Fail()
 	}
 	if messages[0].Text != say {
@@ -29,6 +33,7 @@ func TestMessageInsertAndRetreive(t *testing.T) {
 
 func TestFetchBlocksUntilSpeak(t *testing.T) {
 	start_fetch_wait_count := fetch_wait_count.String()
+	id := "2"
 	say := "I've got a lovely fresh cuttle fish for you"
 	at := time.Now()
 	var zero_time time.Time
@@ -38,12 +43,15 @@ func TestFetchBlocksUntilSpeak(t *testing.T) {
 	for start_fetch_wait_count == fetch_wait_count.String() {
 		runtime.Gosched()
 	}
-	store.Add <- &Message{at, say}
+	store.Add <- &Message{at, id, say}
 	messages := <-messages_from_store
 	if len(messages) != 1 {
 		t.FailNow()
 	}
 	if messages[0].Time != at {
+		t.Fail()
+	}
+	if messages[0].ID != id {
 		t.Fail()
 	}
 	if messages[0].Text != say {
@@ -54,6 +62,7 @@ func TestFetchBlocksUntilSpeak(t *testing.T) {
 }
 
 func TestMultipleListeners(t *testing.T) {
+	id := "3"
 	say := "This is your nine o'clock alarm call!"
 	at := time.Now()
 	var zero_time time.Time
@@ -64,13 +73,16 @@ func TestMultipleListeners(t *testing.T) {
 		messages_from_store[i] = make(chan []Message, 1)
 		store.Get <- &StoreRequest{zero_time, messages_from_store[i]}
 	}
-	store.Add <- &Message{at, say}
+	store.Add <- &Message{at, id, say}
 	for i := 0; i < num_clients; i++ {
 		messages := <-messages_from_store[i]
 		if len(messages) != 1 {
 			t.FailNow()
 		}
 		if messages[0].Time != at {
+			t.Fail()
+		}
+		if messages[0].ID != id {
 			t.Fail()
 		}
 		if messages[0].Text != say {
@@ -99,6 +111,9 @@ func atoi(s string) int {
 
 func TestPartialRetreive(t *testing.T) {
 	start_speak_count := atoi(speak_count.String())
+	id1 := "4"
+	id2 := "5"
+	id3 := "6"
 	say1 := "No, no.....No, 'e's stunned!"
 	say2 := "You stunned him, just as he was wakin' up!"
 	say3 := "Norwegian Blues stun easily, major."
@@ -108,9 +123,9 @@ func TestPartialRetreive(t *testing.T) {
 	at2 := base.Add(parseDuration("-2m"))
 	at3 := base.Add(parseDuration("-1m"))
 	store := start_store()
-	store.Add <- &Message{at1, say1}
-	store.Add <- &Message{at2, say2}
-	store.Add <- &Message{at3, say3}
+	store.Add <- &Message{at1, id1, say1}
+	store.Add <- &Message{at2, id2, say2}
+	store.Add <- &Message{at3, id3, say3}
 	for atoi(speak_count.String()) != start_speak_count+3 {
 		runtime.Gosched()
 	}
@@ -123,10 +138,16 @@ func TestPartialRetreive(t *testing.T) {
 	if messages[0].Time != at2 {
 		t.Fail()
 	}
+	if messages[0].ID != id2 {
+		t.Fail()
+	}
 	if messages[0].Text != say2 {
 		t.Fail()
 	}
 	if messages[1].Time != at3 {
+		t.Fail()
+	}
+	if messages[1].ID != id3 {
 		t.Fail()
 	}
 	if messages[1].Text != say3 {
@@ -138,6 +159,9 @@ func TestPartialRetreive(t *testing.T) {
 
 func TestPrecisePartialRetreive(t *testing.T) {
 	start_speak_count := atoi(speak_count.String())
+	id1 := "7"
+	id2 := "8"
+	id3 := "9"
 	say1 := "Well, he's...he's, ah...probably pining for the fjords."
 	say2 := "PININ' for the FJORDS?!?!?!?"
 	say3 := "look, why did he fall flat on his back the moment I got 'im home?"
@@ -147,9 +171,9 @@ func TestPrecisePartialRetreive(t *testing.T) {
 	at3 := base.Add(parseDuration("-1m"))
 	since := at2
 	store := start_store()
-	store.Add <- &Message{at1, say1}
-	store.Add <- &Message{at2, say2}
-	store.Add <- &Message{at3, say3}
+	store.Add <- &Message{at1, id1, say1}
+	store.Add <- &Message{at2, id2, say2}
+	store.Add <- &Message{at3, id3, say3}
 	for atoi(speak_count.String()) != start_speak_count+3 {
 		runtime.Gosched()
 	}
@@ -162,6 +186,9 @@ func TestPrecisePartialRetreive(t *testing.T) {
 	if messages[0].Time != at3 {
 		t.Fail()
 	}
+	if messages[0].ID != id3 {
+		t.Fail()
+	}
 	if messages[0].Text != say3 {
 		t.Fail()
 	}
@@ -170,6 +197,8 @@ func TestPrecisePartialRetreive(t *testing.T) {
 }
 
 func TestTypicalFlow(t *testing.T) {
+	id1 := "10"
+	id2 := "11"
 	say1 := "The Norwegian Blue prefers kippin' on it's back!"
 	say2 := "Remarkable bird, innit, squire?  Lovely plumage!"
 	store := start_store()
@@ -185,12 +214,15 @@ func TestTypicalFlow(t *testing.T) {
 
 	// Someone speaks.  This triggers delivery.
 	at1 := time.Now()
-	store.Add <- &Message{at1, say1}
+	store.Add <- &Message{at1, id1, say1}
 	messages1 := <-fetch1
 	if len(messages1) != 1 {
 		t.FailNow()
 	}
 	if messages1[0].Time != at1 {
+		t.Fail()
+	}
+	if messages1[0].ID != id1 {
 		t.Fail()
 	}
 	if messages1[0].Text != say1 {
@@ -210,12 +242,15 @@ func TestTypicalFlow(t *testing.T) {
 	if !at2.After(at1) {
 		t.Fail()
 	}
-	store.Add <- &Message{at2, say2}
+	store.Add <- &Message{at2, id2, say2}
 	messages2 := <-fetch2
 	if len(messages2) != 1 {
 		t.FailNow()
 	}
 	if messages2[0].Time != at2 {
+		t.Fail()
+	}
+	if messages2[0].ID != id2 {
 		t.Fail()
 	}
 	if messages2[0].Text != say2 {
