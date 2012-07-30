@@ -27,7 +27,7 @@ function rcserverbase(server) {
 function rcchangeserverstatus(server, new_status) {
 	var statusbar = document.getElementById("status");
 	var spans = statusbar.getElementsByTagName("span");
-	for (i in spans) {
+	for (var i in spans) {
 		if (spans[i].firstChild && 'data' in spans[i].firstChild && spans[i].firstChild.data == server) {
 			spans[i].setAttribute("class", new_status);
 		}
@@ -52,7 +52,7 @@ function receiveMessage(server, time, id, text) {
 	if (!(seen_key in seen)) {
 		seen[seen_key] = true;
 		rcaddmessagetohistory(text);
-		for (i in servers) {
+		for (var i in servers) {
 			rcchangeserverstatus(servers[i], "sad");
 		}
 	}
@@ -61,10 +61,10 @@ function receiveMessage(server, time, id, text) {
 
 function receiveMessageEvent(event)  
 {  
-	for (i in servers) {
+	for (var i in servers) {
 		if (event.origin === rcserverbase(servers[i])) {
 			messages = JSON.parse(event.data);
-			for (j in messages) {
+			for (var j in messages) {
 				if ('Time' in messages[j] &&
 				    'ID'   in messages[j] &&
 				    'Text' in messages[j]) {
@@ -77,7 +77,7 @@ function receiveMessageEvent(event)
 
 function rcconnect() {
 	window.addEventListener("message", receiveMessageEvent, false);  
-	for (i in servers) {
+	for (var i in servers) {
 		// Create a hidden iframe for same-origin workaround
 		var iframe = document.createElement("iframe");
 		iframe.setAttribute("src", rcserverbase(servers[i]) + "/frame");
@@ -99,7 +99,7 @@ function rcsend(d, message) {
 	var path = "/speak" +
 		"?id=" + encodeURIComponent(id) +
 		"&text=" + encodeURIComponent(message);
-	for (i in servers) {
+	for (var i in servers) {
 		var uri = rcserverbase(servers[i]) + path;
 		var img = document.createElement("img");
 		img.setAttribute("src", uri);
