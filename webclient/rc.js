@@ -1,4 +1,4 @@
-var servers = ['chkno.net', 'localhost'];
+var servers = ['chkno.net', 'rc2.chkno.net', 'echto.net', 'the-wes.com', 'vibrantlogic.com'];
 
 var session = Math.random();
 var seen = {};
