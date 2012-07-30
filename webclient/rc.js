@@ -12,6 +12,16 @@ function rcserverbase(server) {
 	}
 }
 
+function rcchangeserverstatus(server, new_status) {
+	var statusbar = document.getElementById("status");
+	var spans = statusbar.getElementsByTagName("span");
+	for (i in spans) {
+		if (spans[i].firstChild && 'data' in spans[i].firstChild && spans[i].firstChild.data == server) {
+			spans[i].setAttribute("class", new_status);
+		}
+	}
+}
+
 function rcaddmessagetohistory(message) {
 	var d = document.createElement("div");
 	d.appendChild(document.createTextNode(message));
@@ -30,7 +40,11 @@ function receiveMessage(server, time, id, text) {
 	if (!(seen_key in seen)) {
 		seen[seen_key] = true;
 		rcaddmessagetohistory(text);
+		for (i in servers) {
+			rcchangeserverstatus(servers[i], "sad");
+		}
 	}
+	rcchangeserverstatus(server, "happy");
 }
 
 function receiveMessageEvent(event)  
@@ -56,6 +70,11 @@ function rcconnect() {
 		var iframe = document.createElement("iframe");
 		iframe.setAttribute("src", rcserverbase(servers[i]) + "/frame");
 		document.body.insertBefore(iframe, document.body.firstChild);
+		// Status bar entry
+		var status_indicator = document.createElement("span");
+		status_indicator.appendChild(document.createTextNode(servers[i]));
+		status_indicator.setAttribute("class", "sad");
+		document.getElementById("status").appendChild(status_indicator);
 	}
 }
 
