@@ -95,6 +95,48 @@ func start_store() Store {
 	return store
 }
 
+const frame_html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <script type="text/javascript"><!--//--><![CDATA[//><!--
+  var since;
+  function go() {
+   var delay = 10000;
+   var xhr = new XMLHttpRequest();
+   xhr.onreadystatechange = function() {
+    if (this.readyState == this.DONE) {
+     if (this.status == 200) {
+      var rtxt = this.responseText;
+      if (rtxt != null) {
+       var r = JSON.parse(rtxt);
+       if (r != null) {
+        window.parent.postMessage(rtxt, "*");
+        delay = 40;
+        if (r.length >= 1 && "Time" in r[r.length-1]) {
+         since = r[r.length-1]["Time"];
+        }
+       }
+      }
+     }
+     window.setTimeout(go, delay);
+    }
+   }
+   var uri = "/fetch";
+   if (since) {
+    uri += '?since="' + since + '"';
+   }
+   xhr.open("GET", uri);
+   xhr.send();
+  }
+  //--><!]]></script>
+</head>
+<body onload="go()">
+</body>
+</html>
+`
+
 func start_server(store Store) {
 	http.HandleFunc("/fetch", func(w http.ResponseWriter, r *http.Request) {
 		var since time.Time
@@ -126,6 +168,10 @@ func start_server(store Store) {
 			time.Now(),
 			r.FormValue("id"),
 			r.FormValue("text")}
+	})
+
+	http.HandleFunc("/frame", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(frame_html));
 	})
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
