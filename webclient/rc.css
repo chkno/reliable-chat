@@ -1,9 +1,0 @@
-html, body, #outer-table, #history { width: 99.9%; height: 100%; margin: 0; padding: 0 }
-#status { background-color: #eef }
-#say { width: 100% }
-#history { vertical-align: bottom }
-img { width: 1px; height: 1px; }
-iframe { display: none }
-#status span { margin-right: 2em }
-#status span.sad { background-color: #fee }
-#status span.happy { background-color: #efe }
