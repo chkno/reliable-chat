@@ -3,6 +3,18 @@ var servers = ['chkno.net', 'rc2.chkno.net', 'echto.net', 'the-wes.com', 'vibran
 var session = Math.random();
 var seen = {};
 
+function rcnick() {
+	var nick = localStorage.getItem("nick");
+	if (nick) {
+		return nick;
+	}
+	return 'anonymous';
+}
+
+function rcsetnick(new_nick) {
+	localStorage.setItem("nick", new_nick);
+}
+
 function rcserverbase(server) {
 	// Add the default port if server doesn't contain a port number already
 	if (server.indexOf(":") == -1) {
@@ -76,6 +88,9 @@ function rcconnect() {
 		status_indicator.setAttribute("class", "sad");
 		document.getElementById("status").appendChild(status_indicator);
 	}
+	if (rcnick() == 'anonymous') {
+		rcaddmessagetohistory("-!- Set your nick with /nick");
+	}
 }
 
 function rcsend(d, message) {
@@ -94,9 +109,27 @@ function rcsend(d, message) {
 
 function rckeydown(event) {
 	if (event.keyCode == 13) {
-		var d = rcaddmessagetohistory(document.input.say.value);
-		rcsend(d, document.input.say.value);
+		var input = document.input.say.value;
 		document.input.say.value = "";
-		return false;
+		
+		// Check nick change
+		var message;
+		var re = /^\/nick (.*)/;
+		var match = re.exec(input);
+		if (match) {
+			message = "*** " + rcnick() + " is now known as " + match[1];
+			rcsetnick(match[1]);
+		} else {
+			message = "<" + rcnick() + "> " + input;
+		}
+
+		// Remind people to set their nick
+		if (rcnick() == 'anonymous') {
+			rcaddmessagetohistory("-!- Set your nick with /nick");
+		}
+
+		// Say the message
+		var d = rcaddmessagetohistory(message);
+		rcsend(d, message);
 	}
 }
