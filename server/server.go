@@ -11,6 +11,7 @@ import "time"
 
 var port = flag.Int("port", 21059, "Port to listen on")
 
+var frame_count = expvar.NewInt("frame_count")
 var speak_count = expvar.NewInt("speak_count")
 var fetch_count = expvar.NewInt("fetch_count")
 var fetch_wait_count = expvar.NewInt("fetch_wait_count")
@@ -171,6 +172,7 @@ func start_server(store Store) {
 	})
 
 	http.HandleFunc("/frame", func(w http.ResponseWriter, r *http.Request) {
+		frame_count.Add(1)
 		w.Write([]byte(frame_html));
 	})
 
