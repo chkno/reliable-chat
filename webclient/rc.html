@@ -19,6 +19,7 @@
 	var servers = ['chkno.net', 'rc2.chkno.net', 'echto.net', 'the-wes.com', 'vibrantlogic.com'];
 
 	var session = Math.random();
+	var since = {};
 	var seen = {};
 
 	function rcnick() {
@@ -65,41 +66,53 @@
 		return id.replace(/@/g, "@@") + "_@_" + text.replace(/@/g, "@@");
 	}
 
-	function receiveMessage(server, time, id, text) {
-		var seen_key = make_seen_key(id, text);
-		if (!(seen_key in seen)) {
-			seen[seen_key] = true;
-			rcaddmessagetohistory(text);
-			for (var i in servers) {
-				rcchangeserverstatus(servers[i], "sad");
-			}
-		}
-		rcchangeserverstatus(server, "happy");
-	}
-
-	function receiveMessageEvent(event)  
-	{  
-		for (var i in servers) {
-			if (event.origin === rcserverbase(servers[i])) {
-				messages = JSON.parse(event.data);
-				for (var j in messages) {
-					if ('Time' in messages[j] &&
-					    'ID'   in messages[j] &&
-					    'Text' in messages[j]) {
-						receiveMessage(servers[i], messages[j]['Time'], messages[j]['ID'], messages[j]['Text']);
-					}
+	function rcreceivemessages(server, messages) {
+		for (var i in messages) {
+			var seen_key = make_seen_key(messages[i]['ID'], messages[i]['Text']);
+			if (!(seen_key in seen)) {
+				seen[seen_key] = true;
+				rcaddmessagetohistory(messages[i]['Text']);
+				for (var i in servers) {
+					rcchangeserverstatus(servers[i], "sad");
 				}
 			}
+			rcchangeserverstatus(server, "happy");
 		}
+	}
+
+	function rcfetch(server) {
+		var delay = 10000;  // TODO: Exponential backoff
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if (this.readyState == this.DONE) {
+				if (this.status == 200) {
+					var rtxt = this.responseText;
+					if (rtxt != null) {
+						var messages = JSON.parse(rtxt);
+						if (messages != null) {
+							rcreceivemessages(server, messages);
+							window.parent.postMessage(rtxt, "*");
+							delay = 40;
+							if (messages.length >= 1 && "Time" in messages[messages.length-1]) {
+								since[server] = messages[messages.length-1]["Time"];
+							}
+						}
+					}
+				}
+				window.setTimeout(rcfetch, delay, server);
+			}
+		}
+		var uri = rcserverbase(server) + "/fetch";
+		if (server in since) {
+			uri += '?since="' + since[server] + '"';
+		}
+		xhr.open("GET", uri);
+		xhr.send();
 	}
 
 	function rcconnect() {
-		window.addEventListener("message", receiveMessageEvent, false);  
 		for (var i in servers) {
-			// Create a hidden iframe for same-origin workaround
-			var iframe = document.createElement("iframe");
-			iframe.setAttribute("src", rcserverbase(servers[i]) + "/frame");
-			document.body.insertBefore(iframe, document.body.firstChild);
+			rcfetch(servers[i]);
 			// Status bar entry
 			var status_indicator = document.createElement("span");
 			status_indicator.appendChild(document.createTextNode(servers[i]));

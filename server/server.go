@@ -161,6 +161,7 @@ func start_server(store Store) {
 			return
 		}
 		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Write(json_encoded)
 	})
 
