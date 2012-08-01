@@ -178,6 +178,7 @@ func start_server(store Store) {
 }
 
 func main() {
+	flag.Parse()
 	store := start_store()
 	start_server(store)
 }
