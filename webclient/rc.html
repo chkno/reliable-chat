@@ -141,14 +141,14 @@
 				message = "<" + rcnick() + "> " + input;
 			}
 
+			// Say the message
+			var d = rcaddmessagetohistory(message);
+			rcsend(d, message);
+
 			// Remind people to set their nick
 			if (rcnick() == 'anonymous') {
 				rcaddmessagetohistory("-!- Set your nick with /nick");
 			}
-
-			// Say the message
-			var d = rcaddmessagetohistory(message);
-			rcsend(d, message);
 		}
 	}
   //--><!]]></script>
