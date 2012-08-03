@@ -129,10 +129,11 @@
 
 	function rcreceivemessages(server, messages) {
 		for (var i in messages) {
-			var seen_key = make_seen_key(messages[i]['ID'], messages[i]['Text']);
+			var m = messages[i];
+			var seen_key = make_seen_key(m.ID, m.Text);
 			if (!(seen_key in seen)) {
 				seen[seen_key] = true;
-				rcaddmessagetohistory(messages[i]);
+				rcaddmessagetohistory(m);
 				for (var i in servers) {
 					rcchangeserverstatus(servers[i], "sad");
 				}
@@ -154,7 +155,7 @@
 							rcreceivemessages(server, messages);
 							delay = 40;
 							if (messages.length >= 1 && "Time" in messages[messages.length-1]) {
-								since[server] = messages[messages.length-1]["Time"];
+								since[server] = messages[messages.length-1].Time;
 							}
 						}
 					}
