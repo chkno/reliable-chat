@@ -141,6 +141,17 @@
 				message = "<" + rcnick() + "> " + input;
 			}
 
+			// /me support
+			var message;
+			var re = /^\/me (.*)/;
+			var match = re.exec(input);
+			var inputme = input.substring(4);
+			if (match) {
+				message = "* " + rcnick() + "  " + inputme;
+			} else {
+				message = "<" + rcnick() + "> " + input;
+			}
+
 			// Remind people to set their nick
 			if (rcnick() == 'anonymous') {
 				rcaddmessagetohistory("-!- Set your nick with /nick");
