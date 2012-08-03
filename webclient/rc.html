@@ -170,7 +170,8 @@
 				seen[seen_key].ServerTimes[server] = m.Time;
 				rcupdatemessagetime(seen[seen_key]);
 			} else {
-				m.ServerTimes = {server: m.Time};
+				m.ServerTimes = {};
+				m.ServerTimes[server] = m.Time;
 				seen[seen_key] = m;
 				rcaddmessagetohistory(m);
 				for (var i in servers) {
