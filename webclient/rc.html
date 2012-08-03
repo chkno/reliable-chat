@@ -5,13 +5,39 @@
 <head>
  <title>Reliable Chat</title>
   <style type="text/css"><!--/*--><![CDATA[/*><!--*/
-	html, body, #outer-table, #history { width: 99.9%; height: 100%; margin: 0; padding: 0 }
-	#status { background-color: #eef }
+	html, body {
+		width: 99.9%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		font-family: monospace;
+	}
+	#container {
+		height: 100%;
+	}
+	#status {
+		width: 100%;
+		background-color: #eef;
+		padding: 5px 5px 5px 0px;
+	}
+	#client {
+		width: 98.5%;
+		padding: 0px 0px 0px 5px;
+		height: 50px;
+		position: fixed;
+		bottom: 0;
+	}
+	#input {
+		width: 100%;
+	}
 	#say { width: 100% }
-	#history { vertical-align: bottom }
+	#history {
+		padding: 0px 5px 55px 5px;
+		vertical-align: bottom
+	}
 	img { width: 1px; height: 1px; }
 	iframe { display: none }
-	#status span { margin-right: 2em }
+	#status span { margin-right: 10px; }
 	#status span.sad {
 		background-color: #f00;
 		color: #fff;
@@ -181,12 +207,15 @@
 </head>
 
 <body onload="rcconnect()">
-	<table id="outer-table">
-		<tr><td id="history"></td></tr>
-		<tr><td id="status">&nbsp;</td></tr>
-		<tr><td><form name="input" onsubmit="return false" autocomplete="off">
-			<input id="say" onkeydown="return rckeydown(event)" autocomplete="off" autofocus="autofocus"></input>
-			</form></td></tr>
-	</table>
+	<div id="container">
+		<div id="history"></div>
+		<div id="client">
+			<div id="input">
+				<form name="input" onsubmit="return false" autocomplete="off">
+					<input id="say" onkeydown="return rckeydown(event)" autocomplete="off" autofocus="autofocus"></input>
+				</form></div>
+			<div id="status">&nbsp;</div>
+		</div>
+	</div>
 </body>
 </html>
