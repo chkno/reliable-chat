@@ -179,9 +179,6 @@
 			status_indicator.setAttribute("class", "sad");
 			document.getElementById("status").appendChild(status_indicator);
 		}
-		if (rcnick() == 'anonymous') {
-			rcaddmessagetohistory("-!- Set your nick with /nick");
-		}
 	}
 
 	function rcsend(d, message) {
@@ -228,11 +225,6 @@
 			// Say the message
 			var d = rcaddmessagetohistory(message);
 			rcsend(d, message);
-
-			// Remind people to set their nick
-			if (rcnick() == 'anonymous') {
-				rcaddmessagetohistory("-!- Set your nick with /nick");
-			}
 		}
 	}
   //--><!]]></script>
