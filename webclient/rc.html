@@ -152,7 +152,6 @@
 						var messages = JSON.parse(rtxt);
 						if (messages != null) {
 							rcreceivemessages(server, messages);
-							window.parent.postMessage(rtxt, "*");
 							delay = 40;
 							if (messages.length >= 1 && "Time" in messages[messages.length-1]) {
 								since[server] = messages[messages.length-1]["Time"];
