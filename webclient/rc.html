@@ -148,9 +148,11 @@
 			message_i = history.length-1;
 		}
 
-		var text = (message.Time ? rcformattime(message.Time) : "") + " " + message.Text;
-		message.UI = document.createElement("div");
-		message.UI.appendChild(document.createTextNode(text));
+		if (!message.UI) {
+			var text = (message.Time ? rcformattime(message.Time) : "") + " " + message.Text;
+			message.UI = document.createElement("div");
+			message.UI.appendChild(document.createTextNode(text));
+		}
 		var h = document.getElementById("history");
 		if (message_i + 1 < history.length) {
 			h.insertBefore(message.UI, history[message_i + 1].UI);
@@ -177,6 +179,14 @@
 		} else {
 			var difference = times[middle].getTime() - times[middle-1].getTime();
 			message.Time = new Date(times[middle-1].getTime() + difference/2);
+		}
+
+		// This may have broken history's in-sorted-order invariant
+		var hi = history.indexOf(message);
+		if ((history[hi-1] && history[hi-1].Time > message.Time) ||
+		    (history[hi+1] && history[hi+1].Time < message.Time)) {
+			history.splice(hi,1);
+			rcaddmessagetohistory(message);
 		}
 	}
 
