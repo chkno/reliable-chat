@@ -114,9 +114,22 @@
 		}
 	}
 
+	function rcformattime(t) {
+		var d = t.getDay();
+		d = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d];
+		var h = t.getHours();
+		var m = t.getMinutes();
+		var s = t.getSeconds();
+		function pad(x) {
+			return (x < 10 ? "0" : "") + x;
+		}
+		return d + " " + pad(h) + ":" + pad(m) + ":" + pad(s);
+	}
+
 	function rcaddmessagetohistory(message) {
 		var d = document.createElement("div");
-		d.appendChild(document.createTextNode(message.Text));
+		var text = (message.Time ? rcformattime(message.Time) : "") + " " + message.Text;
+		d.appendChild(document.createTextNode(text));
 		var h = document.getElementById("history");
 		h.appendChild(d);
 		window.scrollTo(0, document.body.scrollHeight);
@@ -130,6 +143,7 @@
 	function rcreceivemessages(server, messages) {
 		for (var i in messages) {
 			var m = messages[i];
+			m.Time = new Date(m.Time);
 			var seen_key = make_seen_key(m.ID, m.Text);
 			if (!(seen_key in seen)) {
 				seen[seen_key] = true;
