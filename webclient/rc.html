@@ -83,7 +83,7 @@
 	var since = {};    // server -> time: For fetch?since=
 	var seen = {};     // seen_key -> message
 	// Messages have these fields:
-	//   Time: The server timestamp of the first copy to arrive 
+	//   Time: The timestamp.  Median of ServerTimes
 	//   ID: Some unique string for deduping
 	//   Text: The text of the message
 	//   ServerTimes: server -> timestamp
@@ -145,6 +145,22 @@
 		return id.replace(/@/g, "@@") + "_@_" + text.replace(/@/g, "@@");
 	}
 
+	function rcupdatemessagetime(message) {
+		// Set message.Time to be the median of message.ServerTimes
+		var times = [];
+		for (var i in message.ServerTimes) {
+			times.push(message.ServerTimes[i]);
+		}
+		times.sort();
+		var middle = times.length/2;
+		if (times.length % 2) {
+			message.Time = times[middle];
+		} else {
+			var difference = times[middle].getTime() - times[middle-1].getTime();
+			message.Time = new Date(times[middle-1].getTime() + difference/2);
+		}
+	}
+
 	function rcreceivemessages(server, messages) {
 		for (var i in messages) {
 			var m = messages[i];
@@ -152,6 +168,7 @@
 			var seen_key = make_seen_key(m.ID, m.Text);
 			if (seen_key in seen) {
 				seen[seen_key].ServerTimes[server] = m.Time;
+				rcupdatemessagetime(seen[seen_key]);
 			} else {
 				m.ServerTimes = {server: m.Time};
 				seen[seen_key] = m;
