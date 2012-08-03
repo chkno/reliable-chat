@@ -80,8 +80,8 @@
 	var servers = ['chkno.net', 'rc2.chkno.net', 'echto.net', 'the-wes.com', 'vibrantlogic.com'];
 
 	var session = Math.random();  // For outgoing message IDs
-	var since = {};  // server -> time: For fetch?since=
-	var seen = {};  // seen_key -> true
+	var since = {};    // server -> time: For fetch?since=
+	var seen = {};     // seen_key -> message
 
 	function rcnick() {
 		var nick = localStorage.getItem("nick");
@@ -127,13 +127,12 @@
 	}
 
 	function rcaddmessagetohistory(message) {
-		var d = document.createElement("div");
+		message.UI = document.createElement("div");
 		var text = (message.Time ? rcformattime(message.Time) : "") + " " + message.Text;
-		d.appendChild(document.createTextNode(text));
+		message.UI.appendChild(document.createTextNode(text));
 		var h = document.getElementById("history");
-		h.appendChild(d);
+		h.appendChild(message.UI);
 		window.scrollTo(0, document.body.scrollHeight);
-		return d;
 	}
 
 	function make_seen_key(id, text) {
@@ -146,7 +145,7 @@
 			m.Time = new Date(m.Time);
 			var seen_key = make_seen_key(m.ID, m.Text);
 			if (!(seen_key in seen)) {
-				seen[seen_key] = true;
+				seen[seen_key] = m;
 				rcaddmessagetohistory(m);
 				for (var i in servers) {
 					rcchangeserverstatus(servers[i], "sad");
@@ -198,7 +197,7 @@
 
 	function rcsend(d, message) {
 		var id = new Date().getTime() + "-" + session + "-" + Math.random();
-		seen[make_seen_key(id, message)] = true;
+		seen[make_seen_key(id, message)] = message;
 		var path = "/speak" +
 			"?id=" + encodeURIComponent(id) +
 			"&text=" + encodeURIComponent(message);
@@ -223,8 +222,9 @@
 			message = "<" + rcnick() + "> " + input;
 		}
 
-		var d = rcaddmessagetohistory({'Text': message});
-		rcsend(d, message);
+		var m = {'Text': message};
+		rcaddmessagetohistory(m);
+		rcsend(m.UI, m);
 	}
 
 	function rckeydown(event) {
