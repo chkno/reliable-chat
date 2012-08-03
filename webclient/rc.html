@@ -82,6 +82,7 @@
 	var session = Math.random();  // For outgoing message IDs
 	var since = {};    // server -> time: For fetch?since=
 	var seen = {};     // seen_key -> message
+	var history = [];  // List of messages sorted by Time
 	// Messages have these fields:
 	//   Time: The timestamp.  Median of ServerTimes
 	//   ID: Some unique string for deduping
@@ -133,11 +134,29 @@
 	}
 
 	function rcaddmessagetohistory(message) {
-		message.UI = document.createElement("div");
+		var message_i;
+		if (message.Time) {
+			for (var i = history.length - 1; ; i--) {
+				if (i < 0 || (history[i].Time && message.Time >= history[i].Time)) {
+					message_i = i+1;
+					history.splice(message_i, 0, message);
+					break;
+				}
+			}
+		} else {
+			history.push(message);
+			message_i = history.length-1;
+		}
+
 		var text = (message.Time ? rcformattime(message.Time) : "") + " " + message.Text;
+		message.UI = document.createElement("div");
 		message.UI.appendChild(document.createTextNode(text));
 		var h = document.getElementById("history");
-		h.appendChild(message.UI);
+		if (message_i + 1 < history.length) {
+			h.insertBefore(message.UI, history[message_i + 1].UI);
+		} else {
+			h.appendChild(message.UI);
+		}
 		window.scrollTo(0, document.body.scrollHeight);
 	}
 
@@ -223,11 +242,11 @@
 	}
 
 	function rcsend(d, message) {
-		var id = new Date().getTime() + "-" + session + "-" + Math.random();
-		seen[make_seen_key(id, message)] = message;
+		message.ID = new Date().getTime() + "-" + session + "-" + Math.random();
+		seen[make_seen_key(message.ID, message.Text)] = message;
 		var path = "/speak" +
-			"?id=" + encodeURIComponent(id) +
-			"&text=" + encodeURIComponent(message);
+			"?id=" + encodeURIComponent(message.ID) +
+			"&text=" + encodeURIComponent(message.Text);
 		for (var i in servers) {
 			var uri = rcserverbase(servers[i]) + path;
 			var img = document.createElement("img");
@@ -249,7 +268,7 @@
 			message = "<" + rcnick() + "> " + input;
 		}
 
-		var m = {'Text': message};
+		var m = {'Text': message, 'ServerTimes': {}};
 		rcaddmessagetohistory(m);
 		rcsend(m.UI, m);
 	}
