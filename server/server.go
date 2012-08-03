@@ -120,6 +120,7 @@ const frame_html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 <head>
  <script type="text/javascript"><!--//--><![CDATA[//><!--
   var since;
+  window.parent.postMessage('[{"Time":"2000-01-01T00:00:00.000000-00:00","ID":"/frame deprecation warning","Text":"*** You are using an old version of the client.  Please upgrade."}]', "*");
   function go() {
    var delay = 10000;
    var xhr = new XMLHttpRequest();
