@@ -79,9 +79,9 @@
   <script type="text/javascript"><!--//--><![CDATA[//><!--
 	var servers = ['chkno.net', 'rc2.chkno.net', 'echto.net', 'the-wes.com', 'vibrantlogic.com'];
 
-	var session = Math.random();
-	var since = {};
-	var seen = {};
+	var session = Math.random();  // For outgoing message IDs
+	var since = {};  // server -> time: For fetch?since=
+	var seen = {};  // seen_key -> true
 
 	function rcnick() {
 		var nick = localStorage.getItem("nick");
