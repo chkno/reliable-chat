@@ -116,7 +116,7 @@
 
 	function rcaddmessagetohistory(message) {
 		var d = document.createElement("div");
-		d.appendChild(document.createTextNode(message));
+		d.appendChild(document.createTextNode(message.Text));
 		var h = document.getElementById("history");
 		h.appendChild(d);
 		window.scrollTo(0, document.body.scrollHeight);
@@ -132,7 +132,7 @@
 			var seen_key = make_seen_key(messages[i]['ID'], messages[i]['Text']);
 			if (!(seen_key in seen)) {
 				seen[seen_key] = true;
-				rcaddmessagetohistory(messages[i]['Text']);
+				rcaddmessagetohistory(messages[i]);
 				for (var i in servers) {
 					rcchangeserverstatus(servers[i], "sad");
 				}
@@ -208,7 +208,7 @@
 			message = "<" + rcnick() + "> " + input;
 		}
 
-		var d = rcaddmessagetohistory(message);
+		var d = rcaddmessagetohistory({'Text': message});
 		rcsend(d, message);
 	}
 
