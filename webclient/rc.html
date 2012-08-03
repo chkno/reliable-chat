@@ -195,6 +195,14 @@
 			history.splice(hi,1);
 			rcaddmessagetohistory(message);
 		}
+
+		// Update the UI
+		var spans = message.UI.getElementsByTagName("span");
+		for (var i in spans) {
+			if (spans[i].getAttribute && spans[i].getAttribute("class") == "timestamp") {
+				spans[i].firstChild.data = rcformattime(message.Time);
+			}
+		}
 	}
 
 	function rcreceivemessages(server, messages) {
