@@ -82,6 +82,11 @@
 	var session = Math.random();  // For outgoing message IDs
 	var since = {};    // server -> time: For fetch?since=
 	var seen = {};     // seen_key -> message
+	// Messages have these fields:
+	//   Time: The server timestamp of the first copy to arrive 
+	//   ID: Some unique string for deduping
+	//   Text: The text of the message
+	//   UI: The DOM node for this message in the UI
 
 	function rcnick() {
 		var nick = localStorage.getItem("nick");
