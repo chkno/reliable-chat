@@ -56,6 +56,9 @@
 		padding: 0px 5px 55px 5px;
 		vertical-align: bottom
 	}
+	.timestamp {
+		margin-right: 0.8em;
+	}
 	img { width: 1px; height: 1px; }
 	iframe { display: none }
 	#status span { margin-right: 10px; }
@@ -149,9 +152,13 @@
 		}
 
 		if (!message.UI) {
-			var text = (message.Time ? rcformattime(message.Time) : "") + " " + message.Text;
+			var timestamp_text = message.Time ? rcformattime(message.Time) : "";
+			var timestamp = document.createElement("span");
+			timestamp.setAttribute("class", "timestamp");
+			timestamp.appendChild(document.createTextNode(timestamp_text));
 			message.UI = document.createElement("div");
-			message.UI.appendChild(document.createTextNode(text));
+			message.UI.appendChild(timestamp);
+			message.UI.appendChild(document.createTextNode(message.Text));
 		}
 		var h = document.getElementById("history");
 		if (message_i + 1 < history.length) {
