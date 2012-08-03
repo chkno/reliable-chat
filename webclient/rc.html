@@ -173,10 +173,10 @@
 			times.push(message.ServerTimes[i]);
 		}
 		times.sort();
-		var middle = times.length/2;
 		if (times.length % 2) {
-			message.Time = times[middle];
+			message.Time = times[(times.length-1)/2];
 		} else {
+			var middle = times.length/2;
 			var difference = times[middle].getTime() - times[middle-1].getTime();
 			message.Time = new Date(times[middle-1].getTime() + difference/2);
 		}
