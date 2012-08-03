@@ -86,6 +86,7 @@
 	//   Time: The server timestamp of the first copy to arrive 
 	//   ID: Some unique string for deduping
 	//   Text: The text of the message
+	//   ServerTimes: server -> timestamp
 	//   UI: The DOM node for this message in the UI
 
 	function rcnick() {
@@ -149,7 +150,10 @@
 			var m = messages[i];
 			m.Time = new Date(m.Time);
 			var seen_key = make_seen_key(m.ID, m.Text);
-			if (!(seen_key in seen)) {
+			if (seen_key in seen) {
+				seen[seen_key].ServerTimes[server] = m.Time;
+			} else {
+				m.ServerTimes = {server: m.Time};
 				seen[seen_key] = m;
 				rcaddmessagetohistory(m);
 				for (var i in servers) {
