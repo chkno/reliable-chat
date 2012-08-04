@@ -31,6 +31,9 @@
 		color: silver;
 		font-family: monospace;
 	}
+	a {
+		color: white;
+	}
 	#container {
 		height: 100%;
 	}
@@ -209,7 +212,26 @@
 			type += " self";
 		}
 		text_span.setAttribute("class", type);
-		text_span.appendChild(document.createTextNode(message.Text));
+
+		// URL detection
+		var text = message.Text;
+		var URL_re = /\bhttps?:\/\/\S+/;
+		while (URL_re.test(text)) {
+			var match = URL_re.exec(text);
+			var leading_text = text.substr(0, match.index);
+			if (leading_text) {
+				text_span.appendChild(document.createTextNode(leading_text));
+			}
+			var anchor = document.createElement("a");
+			anchor.setAttribute("href", encodeURI(match[0]));
+			anchor.appendChild(document.createTextNode(match[0]));
+			text_span.appendChild(anchor);
+			text = text.substr(match.index + match[0].length);
+		}
+		if (text) {
+			text_span.appendChild(document.createTextNode(text));
+		}
+
 		message.UI.appendChild(text_span);
 	}
 
