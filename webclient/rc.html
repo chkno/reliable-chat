@@ -140,6 +140,25 @@
 		return d + " " + pad(h) + ":" + pad(m) + ":" + pad(s);
 	}
 
+	function rcmakemessageUI(message) {
+		message.UI = document.createElement("div");
+
+		// Server count
+		var servercount = document.createElement("span");
+		servercount.setAttribute("class", "servercount");
+		servercount.appendChild(document.createTextNode(Object.keys(message.ServerTimes).length));
+		message.UI.appendChild(servercount);
+
+		// Timestamp
+		var timestamp_text = message.Time ? rcformattime(message.Time) : "";
+		var timestamp = document.createElement("span");
+		timestamp.setAttribute("class", "timestamp");
+		timestamp.appendChild(document.createTextNode(timestamp_text));
+		message.UI.appendChild(timestamp);
+
+		message.UI.appendChild(document.createTextNode(message.Text));
+	}
+
 	function rcaddmessagetohistory(message) {
 		var message_i;
 		if (message.Time) {
@@ -156,22 +175,7 @@
 		}
 
 		if (!message.UI) {
-			message.UI = document.createElement("div");
-
-			// Server count
-			var servercount = document.createElement("span");
-			servercount.setAttribute("class", "servercount");
-			servercount.appendChild(document.createTextNode(Object.keys(message.ServerTimes).length));
-			message.UI.appendChild(servercount);
-
-			// Timestamp
-			var timestamp_text = message.Time ? rcformattime(message.Time) : "";
-			var timestamp = document.createElement("span");
-			timestamp.setAttribute("class", "timestamp");
-			timestamp.appendChild(document.createTextNode(timestamp_text));
-			message.UI.appendChild(timestamp);
-
-			message.UI.appendChild(document.createTextNode(message.Text));
+			rcmakemessageUI(message);
 		}
 		var h = document.getElementById("history");
 		if (message_i + 1 < history.length) {
