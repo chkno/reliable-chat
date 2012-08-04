@@ -147,27 +147,34 @@
 		}
 	}
 
+	function rcpad2(x) {
+		return (x < 10 ? "0" : "") + x;
+	}
+	function rcpad3(x) {
+		return (x < 10 ? "00" : (x < 100 ? "0" : "")) + x;
+	}
+
 	function rcformattime(t) {
 		var d = t.getDay();
 		d = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d];
 		var h = t.getHours();
 		var m = t.getMinutes();
 		var s = t.getSeconds();
-		function pad(x) {
-			return (x < 10 ? "0" : "") + x;
-		}
-		return d + " " + pad(h) + ":" + pad(m) + ":" + pad(s);
+		return d + " " + rcpad2(h) + ":" + rcpad2(m) + ":" + rcpad2(s);
 	}
 
 	function rcaddservertimestamptohover(message, server) {
 		var divs = message.UI.getElementsByTagName("div");
+		var t = message.ServerTimes[server];
 		for (var i in divs) {
 			if (divs[i].getAttribute && divs[i].getAttribute("class") == "servertimestamps") {
 				var d = document.createElement("div");
-				function pad(x) {
-					return (x < 10 ? "00" : (x < 100 ? "0" : "")) + x;
-				}
-				var text = rcformattime(message.ServerTimes[server]) + "." + pad(message.ServerTimes[server].getUTCMilliseconds()) + " " + server;
+				var text = t.getFullYear() + "-" +
+					rcpad2(t.getMonth()) + "-" +
+					rcpad2(t.getDay()) + " " +
+					rcformattime(t) + "." +
+					rcpad3(t.getMilliseconds()) + " " +
+					server;
 				d.appendChild(document.createTextNode(text));
 				divs[i].appendChild(d);
 			}
