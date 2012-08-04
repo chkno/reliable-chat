@@ -156,7 +156,22 @@
 		timestamp.appendChild(document.createTextNode(timestamp_text));
 		message.UI.appendChild(timestamp);
 
-		message.UI.appendChild(document.createTextNode(message.Text));
+		// Classify different message types
+		var text_span = document.createElement("span");
+		var type;
+		if (/^\*\*\* /.test(message.Text)) {
+			type = "status";
+		} else if (/^\* /.test(message.Text)) {
+			type = "me";
+		} else {
+			type = "text";
+		}
+		if (Object.keys(message.ServerTimes).length == 0) {
+			type += " self";
+		}
+		text_span.setAttribute("class", type);
+		text_span.appendChild(document.createTextNode(message.Text));
+		message.UI.appendChild(text_span);
 	}
 
 	function rcaddmessagetohistory(message) {
