@@ -63,6 +63,22 @@
 	.timestamp {
 		margin-right: 0.8em;
 	}
+	.timestamp:hover, .timestamp:hover .servertimestamps {
+		background-color: #556;
+	}
+	.timestamp:hover .servertimestamps {
+		display: block;
+	}
+	.servertimestamps {
+	  display: none;
+		position: absolute;
+		left: 3em;
+		z-index: 1;
+		border: 1px solid black;
+		border-radius: 5px;
+		padding-left: 5px;
+		padding-right: 5px;
+	}
 	img { width: 1px; height: 1px; }
 	iframe { display: none }
 	#status span { margin-right: 10px; }
@@ -140,6 +156,21 @@
 		return d + " " + pad(h) + ":" + pad(m) + ":" + pad(s);
 	}
 
+	function rcaddservertimestamptohover(message, server) {
+		var divs = message.UI.getElementsByTagName("div");
+		for (var i in divs) {
+			if (divs[i].getAttribute && divs[i].getAttribute("class") == "servertimestamps") {
+				var d = document.createElement("div");
+				function pad(x) {
+					return (x < 10 ? "00" : (x < 100 ? "0" : "")) + x;
+				}
+				var text = rcformattime(message.ServerTimes[server]) + "." + pad(message.ServerTimes[server].getUTCMilliseconds()) + " " + server;
+				d.appendChild(document.createTextNode(text));
+				divs[i].appendChild(d);
+			}
+		}
+	}
+
 	function rcmakemessageUI(message) {
 		message.UI = document.createElement("div");
 
@@ -155,6 +186,14 @@
 		timestamp.setAttribute("class", "timestamp");
 		timestamp.appendChild(document.createTextNode(timestamp_text));
 		message.UI.appendChild(timestamp);
+
+		// Timestamp hover
+		var timestamp_hover = document.createElement("div");
+		timestamp_hover.setAttribute("class", "servertimestamps");
+		timestamp.appendChild(timestamp_hover);
+		for (var server in message.ServerTimes) {
+			rcaddservertimestamptohover(message, server);
+		}
 
 		// Classify different message types
 		var text_span = document.createElement("span");
@@ -250,6 +289,7 @@
 			if (seen_key in seen) {
 				seen[seen_key].ServerTimes[server] = m.Time;
 				rcupdatemessagetime(seen[seen_key]);
+				rcaddservertimestamptohover(seen[seen_key], server);
 			} else {
 				m.ServerTimes = {};
 				m.ServerTimes[server] = m.Time;
