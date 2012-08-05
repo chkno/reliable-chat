@@ -230,6 +230,7 @@
 				text_span.appendChild(document.createTextNode(leading_text));
 			}
 			var anchor = document.createElement("a");
+			anchor.setAttribute("rel", "nofollow");
 			anchor.setAttribute("href", encodeURI(match[0]));
 			anchor.appendChild(document.createTextNode(match[0]));
 			text_span.appendChild(anchor);
