@@ -156,6 +156,10 @@ const frame_html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 </html>
 `
 
+const robots_txt = `User-agent: *
+Disallow: /
+`
+
 func start_server(store Store) {
 	http.HandleFunc("/fetch", func(w http.ResponseWriter, r *http.Request) {
 		var since time.Time
@@ -193,6 +197,10 @@ func start_server(store Store) {
 	http.HandleFunc("/frame", func(w http.ResponseWriter, r *http.Request) {
 		frame_count.Add(1)
 		w.Write([]byte(frame_html));
+	})
+
+	http.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(robots_txt));
 	})
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
