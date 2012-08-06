@@ -23,7 +23,7 @@
  <title>Reliable Chat</title>
   <style type="text/css"><!--/*--><![CDATA[/*><!--*/
 	html, body {
-		width: 99.9%;
+		width: 100%;
 		height: 100%;
 		margin: 0;
 		padding: 0;
@@ -44,9 +44,7 @@
 		padding: 5px 5px 5px 0px;
 	}
 	#client {
-		width: 98.5%;
-		padding: 0px 0px 0px 5px;
-		height: 50px;
+		width: 100%;
 		position: fixed;
 		bottom: 0;
 	}
@@ -56,8 +54,8 @@
 	}
 	#say { width: 100% }
 	#history {
-		padding: 0px 5px 55px 5px;
-		vertical-align: bottom
+		padding: 0px 5px 30px 5px;
+		vertical-align: bottom;
 	}
 	.banner {
 		font-size: 85%;
@@ -102,6 +100,51 @@
 		padding-left: 5px;
 		padding-right: 5px;
 	}
+
+	/* BEGIN expando input box trick kindly provided by http://www.alistapart.com/articles/expanding-text-areas-made-elegant/ */
+	.expandingArea {
+		position: relative;
+		border: 1px solid #888;
+		background: #fff;
+	}
+	.expandingArea > textarea,
+	.expandingArea > pre {
+		margin: 0;
+		outline: 0;
+		border: 0;
+		padding: 5px;
+		background: transparent;
+		font: 400 13px/16px helvetica, arial, sans-serif;
+		/* Make the text soft-wrap */
+		white-space: pre-wrap;
+		word-wrap: break-word;
+	}
+	.expandingArea > textarea {
+		/* The border-box box model is used to allow
+		 * padding whilst still keeping the overall width
+		 * at exactly that of the containing element.
+		 */
+		-webkit-box-sizing: border-box;
+		   -moz-box-sizing: border-box;
+		    -ms-box-sizing: border-box;
+			box-sizing: border-box;
+		width: 100%;
+		/* Hide any scrollbars */
+		overflow: hidden;
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		/* Remove WebKit user-resize widget */
+		resize: none;
+	}
+	.expandingArea > pre {
+		display: block;
+		/* Hide the text; just using it for sizing */
+		visibility: hidden;
+	}
+	/* END expando input box trick kindly provided by http://www.alistapart.com/articles/expanding-text-areas-made-elegant/ */
+
   /*]]>*/--></style>
   <script type="text/javascript"><!--//--><![CDATA[//><!--
 	var servers = ['chkno.net', 'rc2.chkno.net', 'echto.net', 'the-wes.com', 'vibrantlogic.com'];
@@ -366,6 +409,7 @@
 	}
 
 	function rcconnect() {
+		makeExpandingArea(document.getElementById("expando"));
 		for (var i in servers) {
 			rcfetch(servers[i]);
 			// Status bar entry
@@ -412,7 +456,30 @@
 		if (event.keyCode == 13) {
 			rcinput(document.input.say.value);
 			document.input.say.value = "";
-			
+			return false;
+		}
+	}
+
+	// From http://www.alistapart.com/articles/expanding-text-areas-made-elegant/
+	function makeExpandingArea(container) {
+		var area = container.querySelector('textarea');
+		var span1 = container.querySelector('span');
+		var span2 = document.getElementById('historypad');
+		if (area.addEventListener) {
+			area.addEventListener('input', function() {
+				span1.textContent = area.value;
+				span2.textContent = area.value;
+			}, false);
+			span1.textContent = area.value;
+			span2.textContent = area.value;
+		} else if (area.attachEvent) {
+			// IE8 compatibility
+			area.attachEvent('onpropertychange', function() {
+				span1.innerText = area.value;
+				span2.innerText = area.value;
+			});
+			span1.innerText = area.value;
+			span2.innerText = area.value;
 		}
 	}
   //--><!]]></script>
@@ -423,12 +490,18 @@
 	<div id="container">
 		<div class="banner">(You are using <a href="https://github.com/chkno/reliable-chat">Reliable Chat</a>)</div>
 		<div id="history"></div>
+		<div class="expandingArea" style="visibility: hidden">
+			<pre><span id="historypad"></span><br></pre>
+		</div>
 		<div id="client">
 			<div id="input">
 				<form name="input" onsubmit="return false" autocomplete="off">
-					<input id="say" onkeydown="return rckeydown(event)" autocomplete="off" autofocus="autofocus"></input>
+					<div id="expando" class="expandingArea">
+						<pre><span></span><br></pre>
+						<textarea id="say" onkeydown="return rckeydown(event)" autofocus="autofocus"></textarea>
+					</div>
 				</form></div>
-			<div id="status">&nbsp;</div>
+			<div id="status"></div>
 		</div>
 	</div>
 </body>
