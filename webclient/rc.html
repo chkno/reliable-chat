@@ -64,11 +64,8 @@
 		text-align: right;
 	}
 	.servercount {
-		margin-right: 0.5em;
+		margin-right: -0.5em;
 		font-size: 70%;
-	}
-	.timestamp {
-		margin-right: 0.8em;
 	}
 	.timestamp:hover, .timestamp:hover .servertimestamps {
 		background-color: #556;
@@ -193,6 +190,7 @@
 		servercount.setAttribute("class", "servercount");
 		servercount.appendChild(document.createTextNode(Object.keys(message.ServerTimes).length));
 		message.UI.appendChild(servercount);
+		message.UI.appendChild(document.createTextNode(" "));
 
 		// Timestamp
 		var timestamp_text = message.Time ? rcformattime(message.Time) : "";
@@ -200,6 +198,7 @@
 		timestamp.setAttribute("class", "timestamp");
 		timestamp.appendChild(document.createTextNode(timestamp_text));
 		message.UI.appendChild(timestamp);
+		message.UI.appendChild(document.createTextNode(" "));
 
 		// Timestamp hover
 		var timestamp_hover = document.createElement("div");
