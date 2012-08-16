@@ -27,6 +27,7 @@ import "strconv"
 import "time"
 
 var port = flag.Int("port", 21059, "Port to listen on")
+var localaddress = flag.String("localaddress", "", "Local address to bind to")
 
 var frame_count = expvar.NewInt("frame_count")
 var speak_count = expvar.NewInt("speak_count")
@@ -203,7 +204,7 @@ func start_server(store Store) {
 		w.Write([]byte(robots_txt));
 	})
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	log.Fatal(http.ListenAndServe(*localaddress+":"+strconv.Itoa(*port), nil))
 }
 
 func main() {
