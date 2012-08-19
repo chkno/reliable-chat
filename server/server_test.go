@@ -92,7 +92,7 @@ func TestMultipleListeners(t *testing.T) {
 		if len(messages) != 1 {
 			t.FailNow()
 		}
-		expectMessage(t,& messages[0], at, id, say)
+		expectMessage(t, &messages[0], at, id, say)
 	}
 	close(store.Get)
 	close(store.Add)

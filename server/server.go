@@ -154,7 +154,7 @@ func start_server(store Store) {
 	})
 
 	http.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(robots_txt));
+		w.Write([]byte(robots_txt))
 	})
 
 	log.Fatal(http.ListenAndServe(*localaddress+":"+strconv.Itoa(*port), nil))
