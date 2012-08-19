@@ -436,10 +436,9 @@
 			"?id=" + encodeURIComponent(message.ID) +
 			"&text=" + encodeURIComponent(message.Text);
 		for (var i in servers) {
-			var uri = rcserverbase(servers[i]) + path;
-			var img = document.createElement("img");
-			img.setAttribute("src", uri);
-			d.appendChild(img);
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", rcserverbase(servers[i]) + path);
+			xhr.send();
 		}
 	}
 
