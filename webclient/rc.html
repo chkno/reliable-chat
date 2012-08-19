@@ -443,7 +443,7 @@
 
 	function rcinput(input) {
 		var message;
-		var re = /^\/(\S+)(\s(.*))?/
+		var re = /^\/(\S+)(\s(.*))?/;
 		var match = re.exec(input);
 		if (match) {
 			var command = match[1];
@@ -451,6 +451,10 @@
 			if (command == 'me') {
 				message = "* " + rcnick() + "  " + rest;
 			} else if (command == 'nick') {
+				if (rcnick() == rest) {
+					rcaddmessagetoUI({'Text': '-!- Your nick is already ' + rcnick(), 'ServerTimes': {}});
+					return;
+				}
 				message = "*** " + rcnick() + " is now known as " + rest;
 				rcsetnick(rest);
 			} else {
