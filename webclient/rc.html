@@ -258,6 +258,8 @@
 			type = "status";
 		} else if (/^\* /.test(message.Text)) {
 			type = "me";
+		} else if (/^-!- /.test(message.Text)) {
+			type = "local";
 		} else {
 			type = "text";
 		}
