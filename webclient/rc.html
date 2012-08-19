@@ -443,16 +443,18 @@
 
 	function rcinput(input) {
 		var message;
-		var re = /^\/([a-z]+) (.*)/
+		var re = /^\/(\S+)(\s(.*))?/
 		var match = re.exec(input);
 		if (match) {
-			if (match[1] == 'me') {
-				message = "* " + rcnick() + "  " + match[2];
-			} else if (match[1] == 'nick') {
-				message = "*** " + rcnick() + " is now known as " + match[2];
-				rcsetnick(match[2]);
+			var command = match[1];
+			var rest = match[3];
+			if (command == 'me') {
+				message = "* " + rcnick() + "  " + rest;
+			} else if (command == 'nick') {
+				message = "*** " + rcnick() + " is now known as " + rest;
+				rcsetnick(rest);
 			} else {
-				rcaddmessagetoUI({'Text': '-!- No such command: ' + match[1], 'ServerTimes': {}});
+				rcaddmessagetoUI({'Text': '-!- No such command: ' + command, 'ServerTimes': {}});
 				return;
 			}
 		} else {
