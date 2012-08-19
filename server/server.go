@@ -30,6 +30,7 @@ var port = flag.Int("port", 21059, "Port to listen on")
 var localaddress = flag.String("localaddress", "", "Local address to bind to")
 var max_messages = flag.Int("maxmessages", 1000, "Maximum number of messages to retain")
 
+var start_time = expvar.NewInt("start_time")
 var speak_count = expvar.NewInt("speak_count")
 var fetch_count = expvar.NewInt("fetch_count")
 var fetch_wait_count = expvar.NewInt("fetch_wait_count")
@@ -162,6 +163,7 @@ func start_server(store Store) {
 
 func main() {
 	flag.Parse()
+	start_time.Set(time.Now().UnixNano())
 	store := start_store()
 	start_server(store)
 }
