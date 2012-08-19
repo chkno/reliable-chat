@@ -40,6 +40,11 @@ func TestMessageInsertAndRetreive(t *testing.T) {
 	at := time.Now()
 	var zero_time time.Time
 	store := start_store()
+	defer func() {
+		close(store.Get)
+		close(store.Add)
+	}()
+
 	store.Add <- &Message{at, id, say}
 	messages_from_store := make(chan []Message, 1)
 	store.Get <- &StoreRequest{zero_time, messages_from_store}
@@ -48,8 +53,6 @@ func TestMessageInsertAndRetreive(t *testing.T) {
 		t.FailNow()
 	}
 	expectMessage(t, &messages[0], at, id, say)
-	close(store.Get)
-	close(store.Add)
 }
 
 func TestFetchBlocksUntilSpeak(t *testing.T) {
@@ -59,6 +62,11 @@ func TestFetchBlocksUntilSpeak(t *testing.T) {
 	at := time.Now()
 	var zero_time time.Time
 	store := start_store()
+	defer func() {
+		close(store.Get)
+		close(store.Add)
+	}()
+
 	messages_from_store := make(chan []Message, 1)
 	store.Get <- &StoreRequest{zero_time, messages_from_store}
 	for start_fetch_wait_count == fetch_wait_count.String() {
@@ -70,8 +78,6 @@ func TestFetchBlocksUntilSpeak(t *testing.T) {
 		t.FailNow()
 	}
 	expectMessage(t, &messages[0], at, id, say)
-	close(store.Get)
-	close(store.Add)
 }
 
 func TestMultipleListeners(t *testing.T) {
@@ -80,6 +86,11 @@ func TestMultipleListeners(t *testing.T) {
 	at := time.Now()
 	var zero_time time.Time
 	store := start_store()
+	defer func() {
+		close(store.Get)
+		close(store.Add)
+	}()
+
 	const num_clients = 13
 	var messages_from_store [num_clients]chan []Message
 	for i := 0; i < num_clients; i++ {
@@ -94,8 +105,6 @@ func TestMultipleListeners(t *testing.T) {
 		}
 		expectMessage(t, &messages[0], at, id, say)
 	}
-	close(store.Get)
-	close(store.Add)
 }
 
 func parseDuration(s string) time.Duration {
@@ -128,6 +137,11 @@ func TestPartialRetreive(t *testing.T) {
 	at2 := base.Add(parseDuration("-2m"))
 	at3 := base.Add(parseDuration("-1m"))
 	store := start_store()
+	defer func() {
+		close(store.Get)
+		close(store.Add)
+	}()
+
 	store.Add <- &Message{at1, id1, say1}
 	store.Add <- &Message{at2, id2, say2}
 	store.Add <- &Message{at3, id3, say3}
@@ -142,8 +156,6 @@ func TestPartialRetreive(t *testing.T) {
 	}
 	expectMessage(t, &messages[0], at2, id2, say2)
 	expectMessage(t, &messages[1], at3, id3, say3)
-	close(store.Get)
-	close(store.Add)
 }
 
 func TestPrecisePartialRetreive(t *testing.T) {
@@ -160,6 +172,11 @@ func TestPrecisePartialRetreive(t *testing.T) {
 	at3 := base.Add(parseDuration("-1m"))
 	since := at2
 	store := start_store()
+	defer func() {
+		close(store.Get)
+		close(store.Add)
+	}()
+
 	store.Add <- &Message{at1, id1, say1}
 	store.Add <- &Message{at2, id2, say2}
 	store.Add <- &Message{at3, id3, say3}
@@ -173,8 +190,6 @@ func TestPrecisePartialRetreive(t *testing.T) {
 		t.FailNow()
 	}
 	expectMessage(t, &messages[0], at3, id3, say3)
-	close(store.Get)
-	close(store.Add)
 }
 
 func TestTypicalFlow(t *testing.T) {
@@ -183,6 +198,10 @@ func TestTypicalFlow(t *testing.T) {
 	say1 := "The Norwegian Blue prefers kippin' on it's back!"
 	say2 := "Remarkable bird, innit, squire?  Lovely plumage!"
 	store := start_store()
+	defer func() {
+		close(store.Get)
+		close(store.Add)
+	}()
 
 	// A waiting zero-time fetch.
 	var zero_time time.Time
@@ -221,7 +240,4 @@ func TestTypicalFlow(t *testing.T) {
 		t.FailNow()
 	}
 	expectMessage(t, &messages2[0], at2, id2, say2)
-
-	close(store.Get)
-	close(store.Add)
 }
