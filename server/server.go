@@ -53,7 +53,39 @@ type Store struct {
 	Get chan *StoreRequest
 }
 
-// TODO: Monotonic clock
+var monotonic_clock chan chan time.Time
+
+const minimum_clock_increment = time.Millisecond
+
+func start_clock() {
+	internal_monotonic_clock := make(chan chan time.Time, 1)
+	go func() {
+		last_time := time.Now()
+	main:
+		for {
+			select {
+			case request, ok := <-internal_monotonic_clock:
+				if !ok {
+					break main
+				}
+				earliest_acceptable_time := last_time.Add(minimum_clock_increment)
+				current_time := time.Now()
+				if current_time.Before(earliest_acceptable_time) {
+					current_time = earliest_acceptable_time
+				}
+				request <- current_time
+				last_time = current_time
+			}
+		}
+	}()
+	monotonic_clock = internal_monotonic_clock
+}
+
+func now() time.Time {
+	c := make(chan time.Time, 0)
+	monotonic_clock <- c
+	return <-c
+}
 
 func manage_store(store Store) {
 	messages := list.New()
@@ -149,7 +181,7 @@ func start_server(store Store) {
 
 	http.HandleFunc("/speak", func(w http.ResponseWriter, r *http.Request) {
 		store.Add <- &Message{
-			time.Now(),
+			now(),
 			r.FormValue("id"),
 			r.FormValue("text")}
 	})
@@ -163,7 +195,8 @@ func start_server(store Store) {
 
 func main() {
 	flag.Parse()
-	start_time.Set(time.Now().UnixNano())
+	start_clock()
+	start_time.Set(now().UnixNano())
 	store := start_store()
 	start_server(store)
 }
