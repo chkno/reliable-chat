@@ -28,6 +28,7 @@ import "time"
 
 var port = flag.Int("port", 21059, "Port to listen on")
 var localaddress = flag.String("localaddress", "", "Local address to bind to")
+var max_messages = flag.Int("maxmessages", 1000, "Maximum number of messages to retain")
 
 var speak_count = expvar.NewInt("speak_count")
 var fetch_count = expvar.NewInt("fetch_count")
@@ -55,7 +56,6 @@ type Store struct {
 func manage_store(store Store) {
 	messages := list.New()
 	message_count := 0
-	max_messages := 1000
 	waiting := list.New()
 main:
 	for {
@@ -72,7 +72,7 @@ main:
 			}
 			waiting.Init()
 			messages.PushBack(new_message)
-			if message_count < max_messages {
+			if message_count < *max_messages {
 				message_count++
 			} else {
 				messages.Remove(messages.Front())
