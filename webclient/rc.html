@@ -472,7 +472,9 @@
 
 	function rckeydown(event) {
 		if (event.keyCode == 13) {
-			rcinput(document.input.say.value);
+			if (document.input.say.value) {
+				rcinput(document.input.say.value);
+			}
 			document.input.say.value = "";
 			return false;
 		}
