@@ -241,3 +241,46 @@ func TestTypicalFlow(t *testing.T) {
 	}
 	expectMessage(t, &messages2[0], at2, id2, say2)
 }
+
+func TestExpiryDueToLimit(t *testing.T) {
+	previous_limit := *max_messages
+	defer func() { *max_messages = previous_limit }()
+	*max_messages = 2
+
+	start_speak_count := atoi(speak_count.String())
+	start_drop_count := atoi(drop_due_to_limit_count.String())
+	id1 := "12"
+	id2 := "13"
+	id3 := "14"
+	say1 := "'E's passed on!"
+	say2 := "This parrot is no more!"
+	say3 := "He has ceased to be!"
+	base := time.Now()
+	at1 := base.Add(parseDuration("-3m"))
+	at2 := base.Add(parseDuration("-2m"))
+	at3 := base.Add(parseDuration("-1m"))
+	store := start_store()
+	defer func() {
+		close(store.Get)
+		close(store.Add)
+	}()
+
+	store.Add <- &Message{at1, id1, say1}
+	store.Add <- &Message{at2, id2, say2}
+	store.Add <- &Message{at3, id3, say3}
+	for atoi(speak_count.String()) != start_speak_count+3 {
+		runtime.Gosched()
+	}
+	if atoi(drop_due_to_limit_count.String()) != start_drop_count+1 {
+		t.Fail()
+	}
+	messages_from_store := make(chan []Message, 1)
+	var zero_time time.Time
+	store.Get <- &StoreRequest{zero_time, messages_from_store}
+	messages := <-messages_from_store
+	if len(messages) != 2 {
+		t.FailNow()
+	}
+	expectMessage(t, &messages[0], at2, id2, say2)
+	expectMessage(t, &messages[1], at3, id3, say3)
+}
