@@ -34,6 +34,7 @@ var speak_count = expvar.NewInt("speak_count")
 var fetch_count = expvar.NewInt("fetch_count")
 var fetch_wait_count = expvar.NewInt("fetch_wait_count")
 var fetch_wake_count = expvar.NewInt("fetch_wake_count")
+var drop_due_to_limit_count = expvar.NewInt("drop_due_to_limit_count")
 
 type Message struct {
 	Time time.Time
@@ -76,6 +77,7 @@ main:
 				message_count++
 			} else {
 				messages.Remove(messages.Front())
+				drop_due_to_limit_count.Add(1)
 			}
 		case request, ok := <-store.Get:
 			if !ok {
