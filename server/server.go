@@ -29,7 +29,6 @@ import "time"
 var port = flag.Int("port", 21059, "Port to listen on")
 var localaddress = flag.String("localaddress", "", "Local address to bind to")
 
-var frame_count = expvar.NewInt("frame_count")
 var speak_count = expvar.NewInt("speak_count")
 var fetch_count = expvar.NewInt("fetch_count")
 var fetch_wait_count = expvar.NewInt("fetch_wait_count")
@@ -114,49 +113,6 @@ func start_store() Store {
 	return store
 }
 
-const frame_html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
- <script type="text/javascript"><!--//--><![CDATA[//><!--
-  var since;
-  window.parent.postMessage('[{"Time":"2000-01-01T00:00:00.000000-00:00","ID":"/frame deprecation warning","Text":"*** You are using an old version of the client.  Please upgrade."}]', "*");
-  function go() {
-   var delay = 10000;
-   var xhr = new XMLHttpRequest();
-   xhr.onreadystatechange = function() {
-    if (this.readyState == this.DONE) {
-     if (this.status == 200) {
-      var rtxt = this.responseText;
-      if (rtxt != null) {
-       var r = JSON.parse(rtxt);
-       if (r != null) {
-        window.parent.postMessage(rtxt, "*");
-        delay = 40;
-        if (r.length >= 1 && "Time" in r[r.length-1]) {
-         since = r[r.length-1]["Time"];
-        }
-       }
-      }
-     }
-     window.setTimeout(go, delay);
-    }
-   }
-   var uri = "/fetch";
-   if (since) {
-    uri += '?since="' + since + '"';
-   }
-   xhr.open("GET", uri);
-   xhr.send();
-  }
-  //--><!]]></script>
-</head>
-<body onload="go()">
-</body>
-</html>
-`
-
 const robots_txt = `User-agent: *
 Disallow: /
 `
@@ -193,11 +149,6 @@ func start_server(store Store) {
 			time.Now(),
 			r.FormValue("id"),
 			r.FormValue("text")}
-	})
-
-	http.HandleFunc("/frame", func(w http.ResponseWriter, r *http.Request) {
-		frame_count.Add(1)
-		w.Write([]byte(frame_html));
 	})
 
 	http.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
