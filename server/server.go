@@ -184,6 +184,7 @@ func start_server(store Store) {
 			now(),
 			r.FormValue("id"),
 			r.FormValue("text")}
+		w.Header().Add("Access-Control-Allow-Origin", "*")
 	})
 
 	http.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
