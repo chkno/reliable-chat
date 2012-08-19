@@ -468,8 +468,13 @@
 					rcaddmessagetoUI({'Text': '-!- Your nick is already ' + rcnick(), 'ServerTimes': {}});
 					return;
 				}
-				message = "*** " + rcnick() + " is now known as " + rest;
-				rcsetnick(rest);
+				if (rest) {
+					message = "*** " + rcnick() + " is now known as " + rest;
+					rcsetnick(rest);
+				} else {
+					rcaddmessagetoUI({'Text': '-!- /nick requires an argument', 'ServerTimes': {}});
+					return;
+				}
 			} else {
 				rcaddmessagetoUI({'Text': '-!- No such command: ' + command, 'ServerTimes': {}});
 				return;
