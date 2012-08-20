@@ -47,6 +47,7 @@
 		width: 100%;
 		position: fixed;
 		bottom: 0;
+		display: none;
 	}
 	#input {
 		width: 100%;
@@ -112,6 +113,10 @@
 		padding-left: 5px;
 		padding-right: 5px;
 	}
+	#getnick {
+		padding-left: 3em;
+		display: none;
+	}
 
 	/* BEGIN expando input box trick kindly provided by http://www.alistapart.com/articles/expanding-text-areas-made-elegant/ */
 	.expandingArea {
@@ -173,11 +178,7 @@
 	//   UI: The DOM node for this message in the UI
 
 	function rcnick() {
-		var nick = localStorage.getItem("nick");
-		if (nick) {
-			return nick;
-		}
-		return 'anonymous';
+		return localStorage.getItem("nick");
 	}
 
 	function rcsetnick(new_nick) {
@@ -441,6 +442,15 @@
 		}
 	}
 
+	function rcstart() {
+		if (rcnick()) {
+			document.getElementById("client").style.display = 'block';
+			rcconnect();
+		} else {
+			document.getElementById("getnick").style.display = 'block';
+		}
+	}
+
 	function rcsend(d, message) {
 		message.ID = new Date().getTime() + "-" + session + "-" + Math.random();
 		seen[make_seen_key(message.ID, message.Text)] = message;
@@ -498,6 +508,16 @@
 		}
 	}
 
+	function rcsetinitialnick() {
+		if (document.getnickform.initial_nick.value) {
+			rcsetnick(document.getnickform.initial_nick.value);
+			document.getElementById("getnick").style.display = 'none';
+			document.getElementById("client").style.display = 'block';
+			rcconnect();
+		}
+		return false;
+	}
+
 	// From http://www.alistapart.com/articles/expanding-text-areas-made-elegant/
 	function makeExpandingArea(container) {
 		var area = container.querySelector('textarea');
@@ -524,12 +544,19 @@
 
 </head>
 
-<body onload="rcconnect()">
+<body onload="rcstart()">
 	<div id="container">
 		<div class="banner">(You are using <a href="https://github.com/chkno/reliable-chat">Reliable Chat</a>)</div>
 		<div id="history"></div>
 		<div class="expandingArea" style="visibility: hidden">
 			<pre><span id="historypad"></span><br></pre>
+		</div>
+		<div id="getnick">
+			<h1>Set your nick</h1>
+			<form name="getnickform" onsubmit="return rcsetinitialnick();">
+				<input id="initial_nick" type="text"></input>
+				<input type="submit" value="ok"></input>
+			</form>
 		</div>
 		<div id="client">
 			<div id="input">
