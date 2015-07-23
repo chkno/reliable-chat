@@ -169,7 +169,7 @@
 	var session = Math.random();  // For outgoing message IDs
 	var since = {};    // server -> time: For fetch?since=
 	var seen = {};     // seen_key -> message
-	var history = [];  // List of messages sorted by Time
+	var hist = [];  // List of messages sorted by Time
 	// Messages have these fields:
 	//   Time: The timestamp.  Median of ServerTimes
 	//   ID: Some unique string for deduping
@@ -307,19 +307,19 @@
 	function rcaddmessagetohistory(message) {
 		var message_i;
 		if (message.Time) {
-			for (var i = history.length - 1; ; i--) {
-				if (i < 0 || (history[i].Time && message.Time >= history[i].Time)) {
+			for (var i = hist.length - 1; ; i--) {
+				if (i < 0 || (hist[i].Time && message.Time >= hist[i].Time)) {
 					message_i = i+1;
-					history.splice(message_i, 0, message);
+					hist.splice(message_i, 0, message);
 					break;
 				}
 			}
 		} else {
-			history.push(message);
-			message_i = history.length-1;
+			hist.push(message);
+			message_i = hist.length-1;
 		}
-		if (message_i + 1 < history.length) {
-			rcaddmessagetoUI(message, history[message_i + 1].UI);
+		if (message_i + 1 < hist.length) {
+			rcaddmessagetoUI(message, hist[message_i + 1].UI);
 		} else {
 			rcaddmessagetoUI(message, null);
 		}
@@ -357,11 +357,11 @@
 			message.Time = new Date(times[middle-1].getTime() + difference/2);
 		}
 
-		// This may have broken history's in-sorted-order invariant
-		var hi = history.indexOf(message);
-		if ((history[hi-1] && history[hi-1].Time > message.Time) ||
-		    (history[hi+1] && history[hi+1].Time < message.Time)) {
-			history.splice(hi,1);
+		// This may have broken hist's in-sorted-order invariant
+		var hi = hist.indexOf(message);
+		if ((hist[hi-1] && hist[hi-1].Time > message.Time) ||
+		    (hist[hi+1] && hist[hi+1].Time < message.Time)) {
+			hist.splice(hi,1);
 			rcaddmessagetohistory(message);
 		}
 
